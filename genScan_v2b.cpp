@@ -6,20 +6,20 @@
  *
  * @author: Joel Adams, Calvin University, June 2025
  *
- * Usage: ./genScan <genomeFile> <subsequence> 
+ * Usage: ./genScan <genomeFile> <subsequence>
  *
- * Precondition: genomeFile is a text file containing 
+ * Precondition: genomeFile is a text file containing
  *                an organism's DNA sequence in *plain* format.
  */
 
-#include <iostream>            // cout, etc.
-#include <fstream>             // ifstream, etc.
-#include <cstdlib>             // exit()
-#include <omp.h>               // omp_get_wtime()
-//#include <algorithm>           // search()
-//#include "OO_MPI_IO.h"         // ParallelReader
-using namespace std;
+#include <omp.h>  // omp_get_wtime()
 
+#include <cstdlib>   // exit()
+#include <fstream>   // ifstream, etc.
+#include <iostream>  // cout, etc.
+// #include <algorithm>           // search()
+// #include "OO_MPI_IO.h"         // ParallelReader
+using namespace std;
 
 /* retrieve inputs from command line
  * @param: argc, an int
@@ -34,15 +34,15 @@ using namespace std;
  *            && subSeq contains the name of the subsequence the user entered
  *                (i.e., what they want to search for).
  */
-void processCommandLineArgs(int argc, char** argv, 
-                            string& file, string& subSeq) {
+void processCommandLineArgs(int argc, char** argv, string& file,
+                            string& subSeq) {
     if (argc == 3) {
         file = string(argv[1]);
         subSeq = string(argv[2]);
     } else {
         cerr << "\n *** Usage: ./genomeScanner <fileName> <subSequence>\n\n";
         exit(1);
-   }
+    }
 }
 
 /* read a specified number of bytes from a file into a string.
@@ -53,18 +53,17 @@ void processCommandLineArgs(int argc, char** argv,
  * Postcondition: seq contains the chars from the input file.
  */
 void readFile(const string& fileName, string& seq) {
-  ifstream fin(fileName.data()); // open file
-  if (! fin.is_open()) {         // check it
-     cerr << "\n *** Unable to open '" << fileName
-          << "' as input file\n\n";
-     exit(1);
-  } 
-  fin.seekg(0, std::ios::end);   // jump to end
-  long N = fin.tellg();          // N = fin's offset 
-  fin.seekg(0, std::ios::beg);   // undo jump
-  seq.resize(N);                 // resize seq to N
-  fin.get((char*)seq.data(), N); // read N bytes
-  fin.close();                   // clean up
+    ifstream fin(fileName.data());  // open file
+    if (!fin.is_open()) {           // check it
+        cerr << "\n *** Unable to open '" << fileName << "' as input file\n\n";
+        exit(1);
+    }
+    fin.seekg(0, std::ios::end);    // jump to end
+    long N = fin.tellg();           // N = fin's offset
+    fin.seekg(0, std::ios::beg);    // undo jump
+    seq.resize(N);                  // resize seq to N
+    fin.get((char*)seq.data(), N);  // read N bytes
+    fin.close();                    // clean up
 }
 
 /* scan a string containing a genetic sequence for a subsequence
@@ -76,14 +75,14 @@ void readFile(const string& fileName, string& seq) {
              of subSeq within seq.
  */
 long scan(const string& seq, const string& subSeq) {
-   long skip = subSeq.size();
-   long count = 0;
-   size_t pos = seq.find(subSeq, 0);
-   while (pos != string::npos) {
-      ++count; 
-      pos = seq.find(subSeq, pos+skip);
-   } 
-   return count;
+    long skip = subSeq.size();
+    long count = 0;
+    size_t pos = seq.find(subSeq, 0);
+    while (pos != string::npos) {
+        ++count;
+        pos = seq.find(subSeq, pos + skip);
+    }
+    return count;
 }
 
 /* output results of scan
@@ -96,19 +95,18 @@ long scan(const string& seq, const string& subSeq) {
  *           && numSubSeqs == the number of subSeq occurrences in the sequence
  * Postcondition: subSeq, numSubSeqs, inputTime, scanTime, and totalTime
  *                have been displayed with appropriate labels.
- */   
-void printResults(const string& subSeq, long numSubSeqs,
-                   double inputTime, double scanTime, double totalTime) {
-  cout << "\n1 thread found " << numSubSeqs << " occurrence"
-        << ((numSubSeqs == 1) ? "" : "s")
-        << " of '" << subSeq 
-        << "'\n\tRead Time \tScan Time \tTotal Time\n"
-        << fixed << '\t' << inputTime << '\t' << scanTime << '\t' 
-        << totalTime << "\n\n";
+ */
+void printResults(const string& subSeq, long numSubSeqs, double inputTime,
+                  double scanTime, double totalTime) {
+    cout << "\n1 thread found " << numSubSeqs << " occurrence"
+         << ((numSubSeqs == 1) ? "" : "s") << " of '" << subSeq
+         << "'\n\tRead Time \tScan Time \tTotal Time\n"
+         << fixed << '\t' << inputTime << '\t' << scanTime << '\t' << totalTime
+         << "\n\n";
 }
 
 // --------- main function ---------------------
-int main(int argc, char** argv) { 
+int main(int argc, char** argv) {
     string fileName;
     string subSeq;
     string dna;
@@ -127,4 +125,3 @@ int main(int argc, char** argv) {
 
     printResults(subSeq, count, readTime, scanTime, totalTime);
 }
-
